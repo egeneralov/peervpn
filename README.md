@@ -1,38 +1,57 @@
-Role Name
-=========
-
-A brief description of the role goes here.
-
-Requirements
-------------
-
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+egeneralov.peervpn
+==================
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+See [official config file](https://raw.githubusercontent.com/peervpn/peervpn/master/peervpn.conf) for option descriprion.
 
-Dependencies
-------------
-
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+- **networks**: list with dicts
+  - **networkname**: string `PEERVPN`
+    **psk**: string `mytopsecretpassword`
+    **net**: Subnet for distribution between your hosts `192.168.1.0/30`
+    **state**: define `absent` for delete network
+    **port**: int `7000`
+    **enabletunneling**: boolean in string, use quotes, please `"yes"`
+    **interface**: string `tap0`
+    **upcmd**: string for /bin/sh `echo virtual interface is up`
+    **local**: bind to `0.0.0.0`
+    **sockmark**: define more than 0 to mark packets `0`
+    **enableipv4**: boolean in string, use quotes, please `"yes"`
+    **enableipv6**: : boolean in string, use quotes, please `"no"`
+    **enablenat64clat**: boolean in string, use quotes, please `"no"`
+    **enablendpcache**: : boolean in string, use quotes, please `"no"`
+    **enablerelay**: : boolean in string, use quotes, please `"yes"`
+    **engine**: string `padlock`
+    **enableprivdrop**: : boolean in string, use quotes, please `"no"`
+    **user**: `nobody`
+    **group**: `nogroup`
+    **chroot**: `/var/empty`
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+**WARNING**: The use of the group name "peervpn" is mandatory.
 
-    - hosts: servers
+    - hosts: peervpn
+      networks:
+        - networkname: PEERVPN
+          psk: mytopsecretpassword
+          # state: absent
+          port: 7000
+          enabletunneling: "yes"
+          interface: "tap0"
+          net: "192.168.1.0/30"
       roles:
-         - { role: username.rolename, x: 42 }
+         - egeneralov.peervpn
+
 
 License
 -------
 
-BSD
+MIT
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Eduard Generalov <eduard@generalov.net>
