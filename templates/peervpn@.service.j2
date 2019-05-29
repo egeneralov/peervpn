@@ -1,0 +1,9 @@
+[Unit]
+Description=PeerVPN service
+After=systemd-networkd.service network.target
+
+[Service]
+ExecStart=/opt/peervpn-0-044/peervpn /opt/peervpn-0-044/%i.conf
+
+[Install]
+WantedBy=multi-user.target

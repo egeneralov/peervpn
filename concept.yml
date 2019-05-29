@@ -1,0 +1,21 @@
+---
+
+- hosts: localhost
+  gather_facts: no
+  vars:
+    net: "192.168.1.0/24"
+    hosts_seq: "{% set seq=range(1, groups['peervpn']|length + 1) %}{{ seq | list }}"
+    hosts_list: "{% set ips=[] %}{% for host in groups['peervpn'] %}{% if ips.append(host) %}{% endif %}{% endfor %}{{ ips }}"
+    hosts_result: "{{ dict(hosts_list | zip(hosts_seq)) }}"
+
+  tasks:
+
+    - fail:
+        msg: "Too many hosts ({{net | ipaddr('size') }} for {{net}}"
+      when: groups.all|length > net|ipaddr('size') - 2 
+
+    - debug:
+        msg: "{{ hosts_result }}"
+
+    - debug:
+        msg: "{{ net | ipaddr('net') | ipaddr(hosts_result['10.199.27.48']) }}"
