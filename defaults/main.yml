@@ -6,12 +6,10 @@
 networks:
   - networkname: PEERVPN
     psk: mytopsecretpassword
-#     state: absent
+    # state: absent
     port: 7000
     enabletunneling: "yes"
     interface: "tap0"
-    # ifconfig4: 10.1.2.3/24
-    # ifconfig6: 2001:db8:1:2::3/64
     # upcmd: echo virtual interface is up
     # local: 0.0.0.0
     # initpeers: 2001:DB8:1337::1 5678

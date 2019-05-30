@@ -1,6 +1,12 @@
 ---
 # tasks file for egeneralov.peervpn
 
+- name: "check : subnet size"
+  fail:
+    msg: "Too many hosts ({{item | ipaddr('size') }} for {{item}}"
+  when: groups.peervpn|length > item|ipaddr('size') - 2
+  with_items: "{% set i=[] %}{%for item in networks%}{%if i.append(item.net) %}{%endif%}{%endfor%}{{ i }}"
+
 - name: "download : archive"
   get_url:
     url: "https://peervpn.net/files/peervpn-0-044-linux-x86.tar.gz"
@@ -23,6 +29,14 @@
     src: "peervpn.conf.j2"
     dest: "/opt/peervpn-0-044/{{ item.networkname }}.conf"
   with_items: "{{ networks }}"
+  when: "item.state|default('restarted') != 'absent'"
+
+- name: "purge : networks"
+  file:
+    path: "/opt/peervpn-0-044/{{ item.networkname }}.conf"
+    state: absent
+  when: "item.state is defined and item.state == 'absent'"
+  with_items: "{{ networks }}"
 
 - name: "service : peervpn@.service.j2"
   systemd:
@@ -34,17 +48,7 @@
 - name: "Gathering Facts"
   setup:
 
-# - debug:
-#     msg: "{{ ansible_default_ipv4.address }} {{ hostvars[inventory_hostname]['ansible_%s' % item.interface].ipv4.address }}"
-#   with_items: "{{ networks }}"
-
 - debug:
-    msg: "{{ ansible_default_ipv4.address }} {{ hostvars[inventory_hostname]['ansible_%s' % item].ipv4.address }}"
-#   with_items: "{{ networks }}"
-  with_items: "{% set i=[] %}{%for item in networks%}{%if i.append(item.interface) %}{%endif%}{%endfor%}{{ i }}"
-
-
-# - name: "debug : myip"
-#   debug:
-#     msg: "{{ ansible_default_ipv4.address }} {{ net | ipaddr('net') | ipaddr(hosts_result[ansible_default_ipv4.address]) }}"
-#   with_items: "{{ networks }}"
+    msg: "{{ ansible_default_ipv4.address }} {{ hostvars[inventory_hostname]['ansible_%s' % item.interface].ipv4.address }}"
+  with_items: "{{ networks }}"
+  when: "item.state|default('restarted') != 'absent'"
