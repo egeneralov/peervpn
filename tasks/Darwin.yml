@@ -1,0 +1,145 @@
+---
+# tasks file for egeneralov.peervpn
+
+- name: "update : cache"
+  homebrew:
+    update_homebrew: yes
+
+
+- name: "configure : casc"
+  homebrew_tap:
+    tap: "Homebrew/homebrew-cask"
+
+
+- name: "install : tuntap"
+  homebrew_cask:
+    name: tuntap
+
+
+- name: "install : openssl"
+  homebrew:
+    name: openssl
+
+# - name: "install : peervpn"
+#   homebrew:
+#     name: peervpn
+#     state: head
+#   environment:
+#     LDFLAGS: "-L/usr/local/opt/openssl/lib"
+#     CPPFLAGS: "-I/usr/local/opt/openssl/include"
+
+- block:
+  - name: "clone : peervpn"
+    git:
+      accept_hostkey: yes
+      force: yes
+      update: yes
+      repo: "https://github.com/peervpn/peervpn.git"
+      dest: "/usr/local/peervpn/"
+    register: clone
+
+
+  - name: "clean : peervpn"
+    make:
+      chdir: "/usr/local/peervpn/"
+      target: clean
+    when: clone is changed
+
+
+  - name: "build : peervpn"
+    make:
+      chdir: "/usr/local/peervpn/"
+      target: all
+      params:
+        LDFLAGS: "-L/usr/local/opt/openssl/lib"
+        CPPFLAGS: "-I/usr/local/opt/openssl/include"
+    register: build
+
+
+  - name: "install : peervpn"
+    copy:
+      remote_src: yes
+      src: /usr/local/peervpn/peervpn
+      dest: /usr/local/bin/peervpn
+      mode: 0777
+
+
+  - name: "create : directory"
+    file:
+      path: "/Library/Application Support/net.peervpn"
+      state: directory
+
+
+  - name: "configure : .conf"
+    template:
+      src: "peervpn.conf.j2"
+      dest: "/Library/Application Support/net.peervpn/{{ item.networkname }}.conf"
+    with_items: "{{ networks }}"
+    when: "item.state|default('restarted') != 'absent'"
+
+
+  - name: "configure : .plist"
+    template:
+      src: "net.peervpn.plist.j2"
+      dest: "/Library/LaunchAgents/net.peervpn.{{ item.networkname }}.plist"
+    with_items: "{{ networks }}"
+    when: "item.state|default('restarted') != 'absent'"
+  
+
+  - name: "service : load"
+    shell: "launchctl load -w /Library/LaunchAgents/net.peervpn.{{ item.networkname }}.plist"
+    register: cmd
+    changed_when: "'service already loaded' not in cmd.stderr"
+    failed_when: "'No such file or directory' in cmd.stderr or 'No such file or directory' in cmd.stdout"
+    when: "item.state|default('restarted') != 'absent'"
+    with_items: "{{ networks }}"
+
+
+  - name: "service : (en|dis)able"
+    shell: "launchctl {% if item.state|default('restarted') != 'absent' %}en{% else %}dis{% endif %}able net.peervpn.{{ item.networkname }}"
+    register: cmd
+    changed_when: "'service already loaded' not in cmd.stderr"
+    failed_when: "'No such file or directory' in cmd.stderr or 'No such file or directory' in cmd.stdout"
+    with_items: "{{ networks }}"
+
+
+  - name: "service : stop"
+    shell: "launchctl stop net.peervpn.{{ item.networkname }}"
+#     when: "item.state|default('restarted') != 'absent'"
+    with_items: "{{ networks }}"
+
+
+  - name: "service : start"
+    shell: "launchctl start net.peervpn.{{ item.networkname }}"
+    when: "item.state|default('restarted') != 'absent'"
+    with_items: "{{ networks }}"
+
+
+  - name: "purge : conf"
+    file:
+      path: "/Library/Application Support/net.peervpn/{{ item.networkname }}.conf"
+      state: absent
+    when: "item.state is defined and item.state == 'absent'"
+    with_items: "{{ networks }}"
+
+
+  - name: "purge : plist"
+    file:
+      path: "/Library/LaunchAgents/net.peervpn.{{ item.networkname }}.plist"
+      state: absent
+    when: "item.state is defined and item.state == 'absent'"
+    with_items: "{{ networks }}"
+
+
+  - name: "Gathering Facts"
+    setup:
+
+
+  - debug:
+      msg: "{{ ansible_default_ipv4.address }} {{ hostvars[inventory_hostname]['ansible_%s' % item.interface].ipv4.0.address }}"
+    with_items: "{{ networks }}"
+    when: "item.state|default('restarted') != 'absent'"
+
+
+  become: yes
+  become_user: root

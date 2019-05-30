@@ -7,48 +7,4 @@
   when: groups.peervpn|length > item|ipaddr('size') - 2
   with_items: "{% set i=[] %}{%for item in networks%}{%if i.append(item.net) %}{%endif%}{%endfor%}{{ i }}"
 
-- name: "download : archive"
-  get_url:
-    url: "https://peervpn.net/files/peervpn-0-044-linux-x86.tar.gz"
-    remote_src: yes
-    dest: "/opt/"
-
-- name: "unpack : archive"
-  unarchive:
-    src: "/opt/peervpn-0-044-linux-x86.tar.gz"
-    dest: "/opt/"
-    remote_src: yes
-
-- name: "configure : systemd"
-  template:
-    src: "peervpn@.service.j2"
-    dest: "/etc/systemd/system/peervpn@.service"
-
-- name: "configure : networks"
-  template:
-    src: "peervpn.conf.j2"
-    dest: "/opt/peervpn-0-044/{{ item.networkname }}.conf"
-  with_items: "{{ networks }}"
-  when: "item.state|default('restarted') != 'absent'"
-
-- name: "purge : networks"
-  file:
-    path: "/opt/peervpn-0-044/{{ item.networkname }}.conf"
-    state: absent
-  when: "item.state is defined and item.state == 'absent'"
-  with_items: "{{ networks }}"
-
-- name: "service : peervpn@.service.j2"
-  systemd:
-    name: "peervpn@{{ item.networkname }}"
-    enabled: "{% if item.state is not defined %}no{% else %}{% if item.state == 'absent' %}no{% else %}yes{% endif %}{% endif %}"
-    state: "{% if item.state is not defined %}restarted{% else %}{% if item.state == 'absent' %}stopped{% else %}restarted{% endif %}{% endif %}"
-  with_items: "{{ networks }}"
-
-- name: "Gathering Facts"
-  setup:
-
-- debug:
-    msg: "{{ ansible_default_ipv4.address }} {{ hostvars[inventory_hostname]['ansible_%s' % item.interface].ipv4.address }}"
-  with_items: "{{ networks }}"
-  when: "item.state|default('restarted') != 'absent'"
+- include_tasks: "{{ ansible_system }}.yml"

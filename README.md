@@ -46,6 +46,16 @@ Example Playbook
       roles:
          - egeneralov.peervpn
 
+Notes
+-----
+
+- All:
+  - in inventory specify addresses for ansible_default_ipv4
+
+- Mac OS:
+  - interface name must starts with "tap" for ipv4 configurations, and "tun" for ipv6 configurations
+  - search logs in `/usr/local/var/log/net.peervpn.*.std{out,err}.log`
+
 
 License
 -------

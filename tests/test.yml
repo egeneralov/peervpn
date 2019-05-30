@@ -2,5 +2,5 @@
 
 - hosts: peervpn
   roles:
-    - egeneralov.disable_ipv6
+#    - egeneralov.disable_ipv6
     - egeneralov.peervpn

@@ -88,7 +88,7 @@ ifconfig4 {{ item.net | ipaddr('net') | ipaddr(hosts_result[ansible_default_ipv4
 ##               the TAP device has been opened.
 ## Example:      upcmd echo virtual interface is up
 
-upcmd {{ item.upcmd | default('echo virtual interface is up') }}
+{% if item.upcmd is defined %}upcmd {{ item.upcmd }}{% endif %}
 
 
 ## Option:       local <address>
@@ -99,7 +99,7 @@ upcmd {{ item.upcmd | default('echo virtual interface is up') }}
 ##               local 192.168.12.34
 ##               local ::
 
-local {{ item.local | default('0.0.0.0') }}
+{% if item.local is defined %}local {{ item.local }}{% endif %}
 
 
 
@@ -109,7 +109,7 @@ local {{ item.local | default('0.0.0.0') }}
 ##               automatically.
 ## Example:      port 7000
 
-port {{ item.port | default('7000') }}
+{% if item.port is defined %}port {{ item.port }}{% endif %}
 
 
 
@@ -123,7 +123,7 @@ port {{ item.port | default('7000') }}
 ##               Defaults to "0" (disabled).
 ## Example:      sockmark 42
 
-sockmark {{ item.sockmark | default('0') }}
+{% if item.sockmark is defined %}sockmark {{ item.sockmark }}{% endif %}
 
 
 
@@ -132,7 +132,7 @@ sockmark {{ item.sockmark | default('0') }}
 ##               Defaults to "yes".
 ## Example:      enableipv4 yes
 
-enableipv4 {{ item.enableipv4 | default('yes') }}
+{% if item.enableipv4 is defined %}enableipv4 {{ item.enableipv4 }}{% endif %}
 
 
 
@@ -141,7 +141,7 @@ enableipv4 {{ item.enableipv4 | default('yes') }}
 ##               Defaults to "yes".
 ## Example:      enableipv6 yes
 
-enableipv6 {{ item.enableipv6 | default('no') }}
+{% if item.enableipv6 is defined %}enableipv6 {{ item.enableipv6 }}{% endif %}
 
 
 
@@ -155,7 +155,7 @@ enableipv6 {{ item.enableipv6 | default('no') }}
 ##               Defaults to "no".
 ## Example:      enablenat64clat yes
 
-enablenat64clat {{ item.enablenat64clat | default('no') }}
+{% if item.enablenat64clat is defined %}enablenat64clat {{ item.enablenat64clat }}{% endif %}
 
 
 ## Option:       enablendpcache <yes|no>
@@ -165,7 +165,7 @@ enablenat64clat {{ item.enablenat64clat | default('no') }}
 ##               Defaults to "no".
 ## Example:      enablendpcache yes
 
-enablendpcache {{ item.enablendpcache | default('no') }}
+{% if item.enablendpcache is defined %}enablendpcache {{ item.enablendpcache }}{% endif %}
 
 
 
@@ -176,7 +176,7 @@ enablendpcache {{ item.enablendpcache | default('no') }}
 ##               Defaults to "no".
 ## Example:      enablerelay yes
 
-enablerelay {{ item.enablerelay | default('yes') }}
+{% if item.enablerelay is defined %}enablerelay {{ item.enablerelay }}{% endif %}
 
 
 
@@ -185,7 +185,7 @@ enablerelay {{ item.enablerelay | default('yes') }}
 ##               loaded to provide hardware crypto acceleration.
 ## Example:      engine padlock
 
-engine {{ item.engine | default('padlock') }}
+{% if item.engine is defined %}engine {{ item.engine }}{% endif %}
 
 
 
@@ -197,7 +197,7 @@ engine {{ item.engine | default('padlock') }}
 ##               should be set too.
 ## Example:      enableprivdrop yes
 
-enableprivdrop {{ item.enableprivdrop | default('no') }}
+{% if item.enableprivdrop is defined %}enableprivdrop {{ item.enableprivdrop }}{% endif %}
 
 
 
@@ -209,7 +209,7 @@ enableprivdrop {{ item.enableprivdrop | default('no') }}
 ##               username with minimal rights should be selected.
 ## Example:      user nobody
 
-user {{ item.user | default('nobody') }}
+{% if item.user is defined %}user {{ item.user }}{% endif %}
 
 
 
@@ -218,7 +218,7 @@ user {{ item.user | default('nobody') }}
 ##               will switch to after initialization.
 ## Example:      group nogroup
 
-group {{ item.group | default('nogroup') }}
+{% if item.group is defined %}group {{ item.group }}{% endif %}
 
 
 
