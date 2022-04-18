@@ -39,7 +39,11 @@ psk {{ item.psk | default('mytopsecretpassword') }}
 ##               initpeers example.com 7000 example.net 7000 example.org 7000
 
 #initpeers 2001:DB8:1337::1 5678
+{% if initpeers is not defined %}
 initpeers {% for host in groups['peervpn'] %}{{ hostvars[host].ansible_default_ipv4.address }} {{ item.port }}{% if not loop.last %} {% endif %}{% endfor %}
+{% else %}
+initpeers {{ initpeers }}
+{% endif %}
 
 
 ## Option:       enabletunneling <yes|no>
